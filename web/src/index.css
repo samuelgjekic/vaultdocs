@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* VaultDocs design system. All colors HSL. */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
+
+    --sidebar-bg: 0 0% 97%;
+    --sidebar-fg: 0 0% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    --primary: 239 84% 60%;          /* #4F46E5 indigo */
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 226 100% 96%;    /* #EEF2FF */
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 220 9% 46%;  /* #6B7280 */
+
+    --accent: 226 100% 96%;
+    --accent-foreground: 239 84% 60%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;           /* #E5E7EB */
+    --input: 220 13% 91%;
+    --ring: 239 84% 60%;
+
+    --radius: 0.5rem;
+
+    --callout-info-bg: 214 100% 97%;
+    --callout-info-fg: 217 91% 30%;
+    --callout-warning-bg: 48 100% 96%;
+    --callout-warning-fg: 32 81% 29%;
+    --callout-danger-bg: 0 86% 97%;
+    --callout-danger-fg: 0 70% 35%;
+    --callout-success-bg: 138 76% 96%;
+    --callout-success-fg: 142 71% 29%;
+
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 239 84% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 226 100% 96%;
+    --sidebar-accent-foreground: 239 84% 60%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 239 84% 60%;
+  }
+
+  [data-theme='dark'] {
+    --background: 0 0% 7%;            /* #111111 */
+    --foreground: 0 0% 96%;           /* #F5F5F5 */
+
+    --sidebar-bg: 0 0% 10%;           /* #1A1A1A */
+
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary: 234 89% 74%;           /* #818CF8 */
+    --primary-foreground: 0 0% 7%;
+    --primary-soft: 234 30% 18%;
+
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 96%;
+
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 53%;     /* #888 */
+
+    --accent: 234 30% 18%;
+    --accent-foreground: 234 89% 74%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 96%;
+
+    --border: 0 0% 16%;               /* #2A2A2A */
+    --input: 0 0% 16%;
+    --ring: 234 89% 74%;
+
+    --callout-info-bg: 217 50% 14%;
+    --callout-info-fg: 213 94% 78%;
+    --callout-warning-bg: 35 50% 14%;
+    --callout-warning-fg: 43 96% 70%;
+    --callout-danger-bg: 0 50% 14%;
+    --callout-danger-fg: 0 96% 80%;
+    --callout-success-bg: 142 30% 14%;
+    --callout-success-fg: 142 70% 70%;
+
+    --sidebar-background: 0 0% 10%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 234 89% 74%;
+    --sidebar-primary-foreground: 0 0% 7%;
+    --sidebar-accent: 234 30% 18%;
+    --sidebar-accent-foreground: 234 89% 74%;
+    --sidebar-border: 0 0% 16%;
+    --sidebar-ring: 234 89% 74%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  code, pre, kbd { font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+  ::selection { background: hsl(var(--primary) / 0.2); }
+}
+
+@layer components {
+  /* Prose / page content typography */
+  .prose-doc {
+    @apply text-foreground;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .prose-doc h1 { @apply text-4xl font-bold tracking-tight mt-2 mb-6; }
+  .prose-doc h2 { @apply text-2xl font-semibold tracking-tight mt-10 mb-3 scroll-mt-24; }
+  .prose-doc h3 { @apply text-xl font-semibold tracking-tight mt-8 mb-2 scroll-mt-24; }
+  .prose-doc h4 { @apply text-lg font-semibold tracking-tight mt-6 mb-2 scroll-mt-24; }
+  .prose-doc p { @apply my-4; }
+  .prose-doc a { @apply text-primary underline-offset-4 hover:underline; }
+  .prose-doc strong { @apply font-semibold; }
+  .prose-doc ul { @apply list-disc pl-6 my-4 space-y-1; }
+  .prose-doc ol { @apply list-decimal pl-6 my-4 space-y-1; }
+  .prose-doc blockquote { @apply border-l-2 border-primary/40 pl-4 italic text-muted-foreground my-4; }
+  .prose-doc hr { @apply my-8 border-border; }
+  .prose-doc code:not(pre code) {
+    @apply bg-muted text-foreground rounded px-1.5 py-0.5 text-[0.85em] font-mono;
+  }
+  .prose-doc pre {
+    @apply bg-muted rounded-lg p-4 my-4 overflow-x-auto text-[13px] font-mono;
+  }
+  .prose-doc table { @apply w-full my-6 border-collapse text-sm; }
+  .prose-doc th, .prose-doc td { @apply border border-border px-3 py-2 text-left; }
+  .prose-doc th { @apply bg-muted font-semibold; }
+  .prose-doc img { @apply rounded-lg my-6 max-w-full; }
+  .prose-doc ul[data-type='taskList'] { @apply list-none pl-0; }
+  .prose-doc ul[data-type='taskList'] li { @apply flex items-start gap-2; }
+
+  /* Tiptap editor */
+  .ProseMirror { @apply outline-none; min-height: 50vh; }
+  .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply text-muted-foreground float-left h-0 pointer-events-none;
+  }
+
+  /* Sidebar item */
+  .sidebar-item {
+    @apply flex items-center gap-1.5 w-full text-left rounded-md px-2 py-1.5 text-[14px]
+           text-foreground/80 hover:bg-muted/70 transition-colors;
+  }
+  .sidebar-item[data-active='true'] {
+    @apply bg-[hsl(var(--primary-soft))] text-primary font-medium;
+  }
+}
+
+#nprogress .bar {
+  background: hsl(var(--primary)) !important;
+  height: 2px !important;
+}
+#nprogress .peg { box-shadow: 0 0 10px hsl(var(--primary)), 0 0 5px hsl(var(--primary)) !important; }

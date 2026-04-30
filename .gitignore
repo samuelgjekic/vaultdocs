@@ -1,0 +1,45 @@
+# OS
+.DS_Store
+*.swp
+*.swo
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Frontend
+web/node_modules/
+web/dist/
+web/dist-ssr/
+web/*.local
+web/npm-debug.log*
+web/yarn-debug.log*
+web/pnpm-debug.log*
+
+# Backend (Laravel)
+api/vendor/
+api/node_modules/
+api/.env
+api/.env.backup
+api/.phpunit.result.cache
+api/storage/*.key
+api/storage/app/public
+api/storage/framework/cache/data/*
+api/storage/framework/sessions/*
+api/storage/framework/testing/*
+api/storage/framework/views/*
+api/storage/logs/*
+!api/storage/**/.gitignore
+api/database/database.sqlite
+api/database/*.sqlite-journal
+api/public/hot
+api/public/storage
+api/bootstrap/cache/*.php
+
+# Local env
+.env
+.env.local
+
+# Docker
+docker-compose.override.yml
