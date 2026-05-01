@@ -19,7 +19,7 @@ class TiptapMarkdown
         return rtrim($this->node($doc, 0))."\n";
     }
 
-    private function node(array $node, int $listDepth, int $orderedIndex = 0): string
+    private function node(array $node, int $listDepth): string
     {
         $type = $node['type'] ?? '';
         $attrs = $node['attrs'] ?? [];
@@ -30,9 +30,9 @@ class TiptapMarkdown
             'paragraph' => $this->inline($content)."\n\n",
             'heading' => str_repeat('#', max(1, min(6, (int) ($attrs['level'] ?? 2))))
                 .' '.$this->inline($content)."\n\n",
-            'bulletList' => $this->bulletList($content, $listDepth)."\n",
-            'orderedList' => $this->orderedList($content, $listDepth)."\n",
-            'taskList' => $this->taskList($content, $listDepth)."\n",
+            'bulletList' => $this->renderList($content, $listDepth, fn () => '- ')."\n",
+            'orderedList' => $this->renderList($content, $listDepth, fn (int $i) => ($i + 1).'. ')."\n",
+            'taskList' => $this->renderList($content, $listDepth, fn (int $i, array $item) => '- '.(! empty($item['attrs']['checked']) ? '[x]' : '[ ]').' ')."\n",
             'blockquote' => $this->blockquote($content)."\n",
             'codeBlock' => $this->codeBlock($attrs, $content),
             'horizontalRule' => "---\n\n",
@@ -96,76 +96,48 @@ class TiptapMarkdown
         return $text;
     }
 
-    private function bulletList(array $items, int $depth): string
+    /**
+     * Shared bullet/ordered/task list renderer. The prefix closure shapes the
+     * per-item marker (e.g. "- ", "1. ", "- [x] ").
+     *
+     * @param  callable(int $index, array $item): string  $prefixFn
+     */
+    private function renderList(array $items, int $depth, callable $prefixFn): string
     {
         $indent = str_repeat('  ', $depth);
         $out = '';
+        $i = 0;
         foreach ($items as $item) {
             if (! is_array($item)) {
                 continue;
             }
-            $out .= $indent.'- '.$this->listItemBody($item['content'] ?? [], $depth + 1)."\n";
-        }
-
-        return $out;
-    }
-
-    private function orderedList(array $items, int $depth): string
-    {
-        $indent = str_repeat('  ', $depth);
-        $out = '';
-        $i = 1;
-        foreach ($items as $item) {
-            if (! is_array($item)) {
-                continue;
-            }
-            $out .= $indent.$i.'. '.$this->listItemBody($item['content'] ?? [], $depth + 1)."\n";
+            $out .= $indent.$prefixFn($i, $item).$this->listItemBody($item['content'] ?? [], $depth + 1)."\n";
             $i++;
         }
 
         return $out;
     }
 
-    private function taskList(array $items, int $depth): string
+    private function listItemBody(array $children, int $indentDepth): string
     {
-        $indent = str_repeat('  ', $depth);
-        $out = '';
-        foreach ($items as $item) {
-            if (! is_array($item)) {
-                continue;
-            }
-            $box = ! empty($item['attrs']['checked']) ? '[x]' : '[ ]';
-            $out .= $indent.'- '.$box.' '.$this->listItemBody($item['content'] ?? [], $depth + 1)."\n";
+        $rendered = array_values(array_filter(array_map(
+            fn ($child) => is_array($child) ? trim($this->node($child, $indentDepth)) : null,
+            $children,
+        ), fn ($r) => $r !== null && $r !== ''));
+
+        if (! $rendered) {
+            return '';
         }
 
-        return $out;
-    }
+        $indent = str_repeat('  ', $indentDepth);
 
-    private function listItemBody(array $children, int $childDepth): string
-    {
-        $first = '';
-        $rest = '';
-        $primed = false;
-        foreach ($children as $child) {
-            if (! is_array($child)) {
-                continue;
-            }
-            $rendered = trim($this->node($child, $childDepth));
-            if (! $primed) {
-                $first = $rendered;
-                $primed = true;
-            } else {
-                $rest .= "\n".str_repeat('  ', $childDepth).$rendered;
-            }
-        }
-
-        return $first.$rest;
+        return $rendered[0].implode('', array_map(fn ($r) => "\n".$indent.$r, array_slice($rendered, 1)));
     }
 
     private function blockquote(array $content): string
     {
         $inner = trim($this->blocks($content, 0));
-        $lines = preg_split('/\n/', $inner) ?: [];
+        $lines = explode("\n", $inner);
 
         return implode("\n", array_map(fn ($l) => '> '.$l, $lines))."\n";
     }
@@ -204,7 +176,7 @@ class TiptapMarkdown
             default => 'NOTE',
         };
         $body = trim($this->blocks($content, 0));
-        $lines = preg_split('/\n/', $body) ?: [];
+        $lines = explode("\n", $body);
 
         return "> [!{$tag}]\n".implode("\n", array_map(fn ($l) => '> '.$l, $lines))."\n";
     }

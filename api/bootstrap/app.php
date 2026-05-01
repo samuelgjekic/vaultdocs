@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        $middleware->prepend(\App\Http\Middleware\EnsureMigrated::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

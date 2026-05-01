@@ -9,17 +9,39 @@ A clean, polished docs platform you can run on your own server. Tiptap editor, t
 
 ---
 
-## Get started in 60 seconds
+## Install
+
+Pick the path that matches your hosting. All three end at the same place: open the site, walk through `/setup`, start writing.
+
+### 1. Shared PHP hosting (no Docker, no terminal)
+
+The simplest install — works on any cheap host with PHP 8.3+ and SQLite (cPanel, Hostinger, Bluehost, Plesk, etc).
+
+1. Download `vaultdocs-vX.Y.Z.zip` from the [latest release](https://github.com/samuelgjekic/vaultdocs/releases).
+2. Upload + extract into your domain's public folder (`public_html` or similar) so the file `public/index.php` sits at the web root.
+3. Visit your domain. The first request creates the database and runs migrations automatically.
+4. The setup wizard opens — pick an admin email + password, name your first organization, done.
+
+### 2. Docker (VPS or any container host)
+
+No build step, pulls pre-built images from GitHub Container Registry:
+
+```sh
+curl -O https://raw.githubusercontent.com/samuelgjekic/vaultdocs/main/docker-compose.prod.yml
+docker compose -f docker-compose.prod.yml up -d
+```
+
+Open <http://localhost:5173> and walk through `/setup`. Pin to a specific version with `VAULTDOCS_VERSION=v0.1.0`.
+
+### 3. From source (developers)
 
 ```sh
 git clone https://github.com/samuelgjekic/vaultdocs.git
 cd vaultdocs
-docker-compose up
+docker compose up
 ```
 
-Open <http://localhost:5173> and walk through `/setup` to create your admin user and first organization.
-
-That's it. Sign in, start writing.
+Or run the api/web servers directly — see the [Advanced section](#advanced) below.
 
 ---
 
@@ -63,17 +85,13 @@ Press `⌘K` (or `Ctrl+K`). Searches titles and content in the current space.
 
 ---
 
-## Self-hosting
+## Updates & backups
 
-Docker Compose is the supported path:
+**Update** — re-download the new ZIP and overwrite (everything except `database/database.sqlite` and `.env`), or `docker compose pull && docker compose up -d`.
 
-```sh
-docker-compose up -d
-```
+**Backup** — copy the SQLite file (`api/database/database.sqlite` for ZIP installs, the `vaultdocs-data` volume for Docker) and any uploaded media. That's the entire app state.
 
-Data persists in the `vaultdocs-data` named volume. To start fresh: `docker-compose down -v`.
-
-To put VaultDocs behind your own domain, point a reverse proxy (Caddy / Traefik / nginx) at the `web` container on port 80 and the `api` container on port 8000.
+**Reverse proxy** — put Caddy / Traefik / nginx in front and point your domain at port 80 (web) or 8000 (api) for Docker, or your normal vhost for ZIP.
 
 ---
 

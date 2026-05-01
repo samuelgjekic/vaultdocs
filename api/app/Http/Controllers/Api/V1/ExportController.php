@@ -21,15 +21,17 @@ class ExportController extends Controller
 
         return match ($format) {
             'pdf' => $this->exporter->toPdfResponse($space),
-            'txt' => response($this->exporter->toText($space), Response::HTTP_OK, [
-                'Content-Type' => 'text/plain; charset=utf-8',
-                'Content-Disposition' => 'attachment; filename="'.$space->slug.'.txt"',
-            ]),
-            'md', 'markdown' => response($this->exporter->toMarkdown($space), Response::HTTP_OK, [
-                'Content-Type' => 'text/markdown; charset=utf-8',
-                'Content-Disposition' => 'attachment; filename="'.$space->slug.'.md"',
-            ]),
+            'txt' => $this->textDownload($this->exporter->toText($space), 'text/plain', $space->slug.'.txt'),
+            'md', 'markdown' => $this->textDownload($this->exporter->toMarkdown($space), 'text/markdown', $space->slug.'.md'),
             default => abort(Response::HTTP_BAD_REQUEST, 'format must be pdf, txt, or md'),
         };
+    }
+
+    private function textDownload(string $body, string $mime, string $filename): \Illuminate\Http\Response
+    {
+        return response($body, Response::HTTP_OK, [
+            'Content-Type' => $mime.'; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
     }
 }

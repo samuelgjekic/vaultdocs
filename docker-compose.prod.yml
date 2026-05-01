@@ -1,0 +1,40 @@
+# VaultDocs — production / pre-built images.
+#
+# Use this when you don't want to clone the repo or build from source.
+#
+#   curl -O https://raw.githubusercontent.com/samuelgjekic/vaultdocs/main/docker-compose.prod.yml
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# Pin to a specific release by setting VAULTDOCS_VERSION (default: latest):
+#
+#   VAULTDOCS_VERSION=v0.1.0 docker compose -f docker-compose.prod.yml up -d
+
+services:
+  api:
+    image: ghcr.io/samuelgjekic/vaultdocs-api:${VAULTDOCS_VERSION:-latest}
+    ports:
+      - "8000:8000"
+    volumes:
+      - vaultdocs-data:/var/www/html/database
+    environment:
+      APP_NAME: VaultDocs
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: http://localhost:8000
+      APP_FRONTEND_URL: http://localhost:5173
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /var/www/html/database/database.sqlite
+      SESSION_DRIVER: cookie
+      SESSION_SAME_SITE: lax
+      SANCTUM_STATEFUL_DOMAINS: localhost:5173,127.0.0.1:5173
+      REGISTRATION_ENABLED: "true"
+
+  web:
+    image: ghcr.io/samuelgjekic/vaultdocs-web:${VAULTDOCS_VERSION:-latest}
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  vaultdocs-data:

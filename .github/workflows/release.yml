@@ -1,0 +1,139 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to (re)build (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  zip:
+    name: Build standalone ZIP
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_sqlite, mbstring, intl, gd, bcmath, zip
+          tools: composer:v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install backend deps (production)
+        working-directory: api
+        run: composer install --no-dev --no-interaction --optimize-autoloader --prefer-dist
+
+      - name: Build frontend
+        working-directory: web
+        env:
+          VITE_API_URL: /api/v1
+        run: |
+          npm ci --legacy-peer-deps --no-audit --no-fund
+          npm run build
+
+      - name: Bundle SPA into Laravel public/
+        run: |
+          mkdir -p api/public/assets
+          cp -R web/dist/* api/public/
+          # Laravel's index.php must remain the entry point; rename the SPA index.
+          mv api/public/index.html api/public/spa.html
+
+      - name: Stage release tree
+        run: |
+          mkdir -p release/vaultdocs
+          # Ship only api/ — the SPA already lives in api/public/.
+          cp -R api/. release/vaultdocs/
+          # Strip dev artefacts the user doesn't need
+          rm -rf release/vaultdocs/tests \
+                 release/vaultdocs/.git \
+                 release/vaultdocs/storage/logs/*.log \
+                 release/vaultdocs/database/database.sqlite
+          # Friendly top-level files
+          cp README.md release/vaultdocs/README.md
+          cp LICENSE release/vaultdocs/LICENSE
+
+      - name: Create ZIP
+        run: |
+          cd release
+          zip -qr "vaultdocs-${{ steps.ver.outputs.tag }}.zip" vaultdocs
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zip
+          path: release/vaultdocs-${{ steps.ver.outputs.tag }}.zip
+
+      - name: Attach to GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/vaultdocs-${{ steps.ver.outputs.tag }}.zip
+          generate_release_notes: true
+
+  docker:
+    name: Build & push Docker images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push api
+        uses: docker/build-push-action@v6
+        with:
+          context: ./api
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/vaultdocs-api:${{ steps.ver.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/vaultdocs-api:latest
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      - name: Build & push web
+        uses: docker/build-push-action@v6
+        with:
+          context: ./web
+          push: true
+          build-args: VITE_API_URL=/api/v1
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/vaultdocs-web:${{ steps.ver.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/vaultdocs-web:latest
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
