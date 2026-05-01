@@ -22,7 +22,6 @@ export default function CustomizationSettings() {
     accent_color: "#4F46E5",
     default_theme: "system" as "light" | "dark" | "system",
     show_powered_by: true,
-    custom_domain: "",
   });
 
   useEffect(() => {
@@ -32,7 +31,6 @@ export default function CustomizationSettings() {
       accent_color: space.accent_color ?? "#4F46E5",
       default_theme: (space.default_theme ?? "system") as "light" | "dark" | "system",
       show_powered_by: space.show_powered_by,
-      custom_domain: space.custom_domain ?? "",
     });
   }, [space]);
 
@@ -129,12 +127,6 @@ export default function CustomizationSettings() {
             </div>
           </label>
         ))}
-      </div>
-
-      <SectionTitle title="Custom domain" />
-      <div>
-        <Input placeholder="docs.example.com" value={form.custom_domain} onChange={(e) => setForm({ ...form, custom_domain: e.target.value })} />
-        <p className="text-xs text-muted-foreground mt-1">Add a CNAME record pointing to <code className="font-mono">edge.vaultdocs.io</code>.</p>
       </div>
 
       <Button type="submit">Save changes</Button>
