@@ -86,6 +86,7 @@ class SpaceController extends Controller
             'cover' => ['sometimes', 'nullable', 'string'],
             'visibility' => ['sometimes', 'in:public,private,unlisted'],
             'accent_color' => ['sometimes', 'nullable', 'string', 'max:9'],
+            'default_theme' => ['sometimes', 'nullable', 'in:light,dark,system'],
             'show_powered_by' => ['sometimes', 'boolean'],
             'logo' => ['sometimes', 'nullable', 'string'],
             'custom_domain' => ['sometimes', 'nullable', 'string'],

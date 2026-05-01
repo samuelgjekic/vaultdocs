@@ -21,6 +21,7 @@ class SpaceResource extends JsonResource
             'visibility' => $this->visibility,
             'password_protected' => ! is_null($this->password),
             'accent_color' => $this->accent_color,
+            'default_theme' => $this->default_theme,
             'show_powered_by' => (bool) $this->show_powered_by,
             'logo' => $this->logo,
             'custom_domain' => $this->custom_domain,

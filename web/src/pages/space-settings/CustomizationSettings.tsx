@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "./GeneralSettings";
 import { toast } from "sonner";
-import { Globe, Lock, Eye } from "lucide-react";
+import { Globe, Lock, Eye, Sun, Moon, Monitor } from "lucide-react";
 
 const swatches = ["#4F46E5", "#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899"];
 
@@ -20,6 +20,7 @@ export default function CustomizationSettings() {
     visibility: "public" as "public" | "private" | "unlisted",
     password_protected: false,
     accent_color: "#4F46E5",
+    default_theme: "system" as "light" | "dark" | "system",
     show_powered_by: true,
     custom_domain: "",
   });
@@ -29,6 +30,7 @@ export default function CustomizationSettings() {
       visibility: space.visibility,
       password_protected: !!space.password_protected,
       accent_color: space.accent_color ?? "#4F46E5",
+      default_theme: (space.default_theme ?? "system") as "light" | "dark" | "system",
       show_powered_by: space.show_powered_by,
       custom_domain: space.custom_domain ?? "",
     });
@@ -40,6 +42,12 @@ export default function CustomizationSettings() {
     { v: "public", icon: Globe, label: "Public", desc: "Anyone on the internet can view." },
     { v: "private", icon: Lock, label: "Private", desc: "Only invited members can view." },
     { v: "unlisted", icon: Eye, label: "Unlisted", desc: "Only people with the link can view." },
+  ] as const;
+
+  const themeOpts = [
+    { v: "light", icon: Sun, label: "Light", desc: "Always light, regardless of OS preference." },
+    { v: "dark", icon: Moon, label: "Dark", desc: "Always dark, regardless of OS preference." },
+    { v: "system", icon: Monitor, label: "System", desc: "Match the visitor's operating system." },
   ] as const;
 
   return (
@@ -104,6 +112,23 @@ export default function CustomizationSettings() {
           <p className="text-xs text-muted-foreground">Displayed in the sidebar footer.</p>
         </div>
         <Switch checked={form.show_powered_by} onCheckedChange={(v) => setForm({ ...form, show_powered_by: v })} />
+      </div>
+
+      <SectionTitle title="Default theme" subtitle="What visitors see if they haven't set a theme themselves." />
+      <div className="space-y-2">
+        {themeOpts.map((o) => (
+          <label
+            key={o.v}
+            className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${form.default_theme === o.v ? "border-primary bg-primary-soft" : "border-border hover:border-foreground/20"}`}
+          >
+            <input type="radio" name="theme" className="mt-1" checked={form.default_theme === o.v} onChange={() => setForm({ ...form, default_theme: o.v })} />
+            <o.icon className="h-4 w-4 mt-0.5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-medium">{o.label}</p>
+              <p className="text-xs text-muted-foreground">{o.desc}</p>
+            </div>
+          </label>
+        ))}
       </div>
 
       <SectionTitle title="Custom domain" />

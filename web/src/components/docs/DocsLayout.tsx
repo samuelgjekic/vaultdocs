@@ -175,10 +175,11 @@ export function DocsLayout({ orgSlug, spaceSlug, activePath, children, rightRail
           <div className="flex-1" />
           <button
             onClick={() => setPaletteOpen(true)}
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground border border-border rounded-md hover:border-foreground/20"
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 w-72 text-sm text-muted-foreground border border-border rounded-md hover:border-foreground/20 transition-colors"
           >
             <Search className="h-3.5 w-3.5" />
-            <kbd className="text-[10px]">⌘K</kbd>
+            <span className="flex-1 text-left">Search…</span>
+            <kbd className="text-[10px] border border-border rounded px-1 py-0.5">⌘K</kbd>
           </button>
           <ThemeToggle />
           {user && (

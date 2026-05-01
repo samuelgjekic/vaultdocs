@@ -12,6 +12,7 @@ import { PageNavigation } from "@/components/docs/PageNavigation";
 import { Breadcrumb } from "@/components/docs/Breadcrumb";
 import { useAuthStore } from "@/store/auth";
 import { useSpaceStore } from "@/store/space";
+import { useThemeStore } from "@/store/theme";
 import { Pencil, Eye, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SpacePasswordGate } from "@/components/docs/SpacePasswordGate";
@@ -23,6 +24,7 @@ export default function SpacePage() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const isUnlocked = useSpaceStore((s) => s.isUnlocked);
+  const userTheme = useThemeStore((s) => s.theme);
 
   const { data: space, isLoading: loadingSpace } = useQuery({
     queryKey: ["space", orgSlug, spaceSlug],
@@ -45,6 +47,18 @@ export default function SpacePage() {
     if (loadingPage) NProgress.start();
     else NProgress.done();
   }, [loadingPage]);
+
+  // Apply this space's default theme — but only when the user is on "system",
+  // i.e. they haven't explicitly toggled to light or dark themselves.
+  useEffect(() => {
+    if (!space?.default_theme) return;
+    if (userTheme !== "system") return;
+    const target =
+      space.default_theme === "system"
+        ? window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+        : space.default_theme;
+    document.documentElement.setAttribute("data-theme", target);
+  }, [space?.default_theme, userTheme]);
 
   const [editing, setEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");

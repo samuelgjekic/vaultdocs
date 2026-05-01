@@ -22,6 +22,7 @@ class Space extends Model
         'visibility',
         'password',
         'accent_color',
+        'default_theme',
         'show_powered_by',
         'logo',
         'custom_domain',
