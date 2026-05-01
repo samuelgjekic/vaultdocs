@@ -6,8 +6,9 @@ import { SidebarTree } from "@/components/docs/SidebarTree";
 import { CommandPalette } from "@/components/docs/CommandPalette";
 import { ThemeToggle } from "@/components/docs/ThemeToggle";
 import { PoweredBy } from "@/components/docs/PoweredBy";
-import { Search, Menu, X, Settings, LogOut, ChevronDown } from "lucide-react";
+import { Search, Menu, X, Settings, LogOut, ChevronDown, Plus } from "lucide-react";
 import { IconRender } from "@/lib/icon";
+import { CreateSpaceDialog } from "@/components/docs/CreateSpaceDialog";
 import { useAuthStore } from "@/store/auth";
 import {
   DropdownMenu,
@@ -31,6 +32,7 @@ export function DocsLayout({ orgSlug, spaceSlug, activePath, children, rightRail
   const basePath = `/${orgSlug}/${spaceSlug}`;
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
@@ -81,15 +83,20 @@ export function DocsLayout({ orgSlug, spaceSlug, activePath, children, rightRail
                 </Link>
               </DropdownMenuItem>
             ))}
-            {canEdit && (
+            {user && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to={`${basePath}/~/settings`} className="flex items-center gap-2">
-                    <Settings className="h-3.5 w-3.5" /> Space settings
-                  </Link>
+                <DropdownMenuItem onSelect={() => setCreateSpaceOpen(true)}>
+                  <Plus className="h-3.5 w-3.5 mr-2" /> New space
                 </DropdownMenuItem>
               </>
+            )}
+            {canEdit && (
+              <DropdownMenuItem asChild>
+                <Link to={`${basePath}/~/settings`} className="flex items-center gap-2">
+                  <Settings className="h-3.5 w-3.5" /> Space settings
+                </Link>
+              </DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -223,6 +230,12 @@ export function DocsLayout({ orgSlug, spaceSlug, activePath, children, rightRail
         spaceSlug={spaceSlug}
         tree={tree ?? []}
         basePath={basePath}
+      />
+
+      <CreateSpaceDialog
+        orgSlug={orgSlug}
+        open={createSpaceOpen}
+        onOpenChange={setCreateSpaceOpen}
       />
     </div>
   );

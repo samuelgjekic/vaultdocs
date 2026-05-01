@@ -61,6 +61,59 @@ class SpacesTest extends TestCase
             ->assertStatus(403);
     }
 
+    public function test_create_space_requires_auth(): void
+    {
+        $this->makeOrg();
+        $this->postJson('/api/v1/orgs/acme/spaces', [
+            'name' => 'New', 'visibility' => 'public',
+        ])->assertStatus(401);
+    }
+
+    public function test_create_space_requires_org_membership(): void
+    {
+        $this->makeOrg();
+        $outsider = User::create([
+            'name' => 'Out', 'email' => 'out@example.com', 'password' => 'secret123', 'role' => 'viewer',
+        ]);
+
+        $this->actingAs($outsider, 'sanctum')
+            ->postJson('/api/v1/orgs/acme/spaces', ['name' => 'New', 'visibility' => 'public'])
+            ->assertStatus(403);
+    }
+
+    public function test_create_space_succeeds_for_member(): void
+    {
+        [$admin] = $this->makeOrg();
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/v1/orgs/acme/spaces', [
+                'name' => 'My New Space',
+                'description' => 'Hello',
+                'visibility' => 'private',
+                'icon' => '🚀',
+            ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('name', 'My New Space')
+            ->assertJsonPath('slug', 'my-new-space')
+            ->assertJsonPath('visibility', 'private')
+            ->assertJsonPath('org_slug', 'acme')
+            ->assertJsonPath('icon', '🚀');
+    }
+
+    public function test_create_space_resolves_duplicate_slug(): void
+    {
+        [$admin, $org] = $this->makeOrg();
+        Space::create(['organization_id' => $org->id, 'name' => 'Docs', 'slug' => 'docs', 'visibility' => 'public']);
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/v1/orgs/acme/spaces', ['name' => 'Docs', 'visibility' => 'public']);
+
+        $response->assertCreated();
+        $this->assertNotSame('docs', $response->json('slug'));
+        $this->assertStringStartsWith('docs-', $response->json('slug'));
+    }
+
     public function test_update_space_requires_org_role(): void
     {
         [$admin, $org] = $this->makeOrg();

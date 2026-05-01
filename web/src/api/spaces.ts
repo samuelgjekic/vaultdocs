@@ -24,6 +24,18 @@ export const updateSpace = async (
   return data;
 };
 
+export interface CreateSpaceInput {
+  name: string;
+  visibility: "public" | "private" | "unlisted";
+  description?: string;
+  icon?: string;
+}
+
+export const createSpace = async (orgSlug: string, input: CreateSpaceInput): Promise<Space> => {
+  const { data } = await api.post<Space>(`/orgs/${orgSlug}/spaces`, input);
+  return data;
+};
+
 export const getPageTree = async (orgSlug: string, spaceSlug: string): Promise<PageNode[]> => {
   const { data } = await api.get<PageNode[]>(`/orgs/${orgSlug}/spaces/${spaceSlug}/pages`);
   return data;

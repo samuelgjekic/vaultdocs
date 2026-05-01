@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 });
 
 Route::get('/spaces', [SpaceController::class, 'index']);
+Route::post('/orgs/{organization}/spaces', [SpaceController::class, 'store']);
 
 Route::prefix('orgs/{organization}/spaces/{space}')->scopeBindings()->group(function (): void {
     Route::get('/', [SpaceController::class, 'show']);
