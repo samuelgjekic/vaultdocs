@@ -7,6 +7,7 @@ import { CommandPalette } from "@/components/docs/CommandPalette";
 import { ThemeToggle } from "@/components/docs/ThemeToggle";
 import { PoweredBy } from "@/components/docs/PoweredBy";
 import { Search, Menu, X, Settings, LogOut, ChevronDown } from "lucide-react";
+import { IconRender } from "@/lib/icon";
 import { useAuthStore } from "@/store/auth";
 import {
   DropdownMenu,
@@ -63,7 +64,7 @@ export function DocsLayout({ orgSlug, spaceSlug, activePath, children, rightRail
       <div className="px-3 pt-4 pb-2">
         <DropdownMenu>
           <DropdownMenuTrigger className="w-full flex items-center gap-2 rounded-md px-2 py-2 hover:bg-muted text-left">
-            <span className="text-2xl leading-none">{space.icon ?? "📘"}</span>
+            <IconRender value={space.icon} className="h-6 w-6" fallback={<span className="text-2xl leading-none">📘</span>} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate">{space.name}</p>
               <p className="text-[11px] text-muted-foreground truncate">{orgSlug}</p>
@@ -75,7 +76,7 @@ export function DocsLayout({ orgSlug, spaceSlug, activePath, children, rightRail
             {allSpaces?.map((sp) => (
               <DropdownMenuItem key={sp.id} asChild>
                 <Link to={`/${sp.org_slug}/${sp.slug}`} className="flex items-center gap-2">
-                  <span>{sp.icon}</span>
+                  <IconRender value={sp.icon} className="h-4 w-4" />
                   <span>{sp.name}</span>
                 </Link>
               </DropdownMenuItem>
@@ -201,15 +202,17 @@ export function DocsLayout({ orgSlug, spaceSlug, activePath, children, rightRail
           )}
         </header>
 
-        <div className="flex-1 flex">
-          <main className="flex-1 min-w-0 px-6 lg:px-12 py-10">
-            <div className="max-w-[760px] mx-auto">{children}</div>
-          </main>
-          {rightRail && (
-            <aside className="hidden lg:block w-[220px] shrink-0 px-4 py-10 sticky top-14 self-start max-h-[calc(100vh-3.5rem)] overflow-y-auto">
-              {rightRail}
-            </aside>
-          )}
+        <div className="flex-1 flex justify-center">
+          <div className="flex w-full max-w-[1100px]">
+            <main className="flex-1 min-w-0 max-w-[760px] px-6 lg:px-12 py-10">
+              {children}
+            </main>
+            {rightRail && (
+              <aside className="docs-toc-rail hidden lg:block w-[220px] shrink-0 px-4 py-10 sticky top-14 self-start max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+                {rightRail}
+              </aside>
+            )}
+          </div>
         </div>
       </div>
 

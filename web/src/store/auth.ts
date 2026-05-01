@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import axios from "axios";
-import { api, apiBaseURL } from "@/api/client";
+import { api } from "@/api/client";
 import type { User } from "@/types";
 
 interface AuthState {
@@ -14,9 +13,8 @@ interface AuthState {
   fetchMe: () => Promise<void>;
 }
 
-const baseOrigin = new URL(apiBaseURL).origin;
-
-const ensureCsrf = () => axios.get(`${baseOrigin}/sanctum/csrf-cookie`, { withCredentials: true });
+// Hits /sanctum/csrf-cookie via the same origin (Vite proxy in dev, reverse proxy in prod).
+const ensureCsrf = () => api.get("/sanctum/csrf-cookie", { baseURL: "/" });
 
 export const useAuthStore = create<AuthState>()(
   persist(

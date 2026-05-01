@@ -3,6 +3,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { docExtensions } from "@/lib/tiptap/extensions";
 import { Bold, Italic, Underline as UnderlineIcon, Code, Link as LinkIcon, Heading2, List, ListOrdered, Quote, Minus, MessageSquare } from "lucide-react";
+import { EditorToolbar } from "./EditorToolbar";
 
 interface Props {
   initialContent: any;
@@ -54,7 +55,7 @@ export function PageEditor({ initialContent, initialTitle, isDraft, onChange, on
       const text = $from.parent.textContent;
       if (text.endsWith("/")) {
         const coords = ed.view.coordsAtPos($from.pos);
-        setSlashPos({ top: coords.bottom + window.scrollY, left: coords.left });
+        setSlashPos({ top: coords.bottom + 4, left: coords.left });
         setShowSlash(true);
       } else {
         setShowSlash(false);
@@ -101,12 +102,15 @@ export function PageEditor({ initialContent, initialTitle, isDraft, onChange, on
         placeholder="Untitled"
         className="w-full bg-transparent text-4xl font-bold tracking-tight outline-none mb-6 placeholder:text-muted-foreground/50"
       />
+      <EditorToolbar editor={editor} />
       <FloatingToolbar editor={editor} />
-      <EditorContent editor={editor} className="prose-doc" />
+      <div className="editor-frame">
+        <EditorContent editor={editor} className="prose-doc" />
+      </div>
 
       {showSlash && (
         <div
-          style={{ position: "absolute", top: slashPos.top, left: slashPos.left }}
+          style={{ position: "fixed", top: slashPos.top, left: slashPos.left }}
           className="z-50 w-64 bg-popover border border-border rounded-md shadow-xl p-1"
         >
           {slashItems.map((it) => (
@@ -149,17 +153,17 @@ function FloatingToolbar({ editor }: { editor: any }) {
       const start = editor.view.coordsAtPos(from);
       const end = editor.view.coordsAtPos(to);
       const left = (start.left + end.left) / 2;
-      setPos({ top: start.top + window.scrollY - 44, left: left + window.scrollX });
+      setPos({ top: start.top - 44, left });
     };
     editor.on("selectionUpdate", update);
-    editor.on("blur", () => setPos(null));
     return () => { editor.off("selectionUpdate", update); };
   }, [editor]);
 
   if (!pos) return null;
   return (
     <div
-      style={{ position: "absolute", top: pos.top, left: pos.left, transform: "translateX(-50%)" }}
+      onMouseDown={(e) => e.preventDefault()}
+      style={{ position: "fixed", top: pos.top, left: pos.left, transform: "translateX(-50%)" }}
       className="z-50 flex items-center gap-0.5 bg-popover border border-border rounded-md shadow-lg p-1"
     >
       <ToolbarBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")}><Bold className="h-3.5 w-3.5" /></ToolbarBtn>

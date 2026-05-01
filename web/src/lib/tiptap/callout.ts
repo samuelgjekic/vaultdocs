@@ -17,10 +17,14 @@ export const Callout = Node.create({
   parseHTML() {
     return [{ tag: "div[data-callout]" }];
   },
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ node, HTMLAttributes }) {
+    const variant = node.attrs.variant ?? "info";
     return [
       "div",
-      mergeAttributes(HTMLAttributes, { "data-callout": "true", class: "vd-callout" }),
+      mergeAttributes(HTMLAttributes, {
+        "data-callout": "true",
+        class: `vd-callout my-5 rounded-lg border-l-4 px-4 py-3 callout-${variant}`,
+      }),
       0,
     ];
   },

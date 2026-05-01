@@ -164,6 +164,22 @@
     @apply text-muted-foreground float-left h-0 pointer-events-none;
   }
 
+  /* Bordered card around the editable surface so the writable area is visible */
+  .editor-frame {
+    @apply rounded-lg border border-border bg-background px-6 py-5 transition-colors;
+  }
+  .editor-frame:focus-within {
+    @apply border-primary/40;
+  }
+
+  /* Right rail always shows the "On this page" panel — see TableOfContents.tsx */
+
+  /* Callout variants — global so they apply in both view (PageContent) and edit (PageEditor) modes */
+  .callout-info    { background: hsl(var(--callout-info-bg));    color: hsl(var(--callout-info-fg));    border-color: hsl(var(--callout-info-fg)); }
+  .callout-warning { background: hsl(var(--callout-warning-bg)); color: hsl(var(--callout-warning-fg)); border-color: hsl(var(--callout-warning-fg)); }
+  .callout-danger  { background: hsl(var(--callout-danger-bg));  color: hsl(var(--callout-danger-fg));  border-color: hsl(var(--callout-danger-fg)); }
+  .callout-success { background: hsl(var(--callout-success-bg)); color: hsl(var(--callout-success-fg)); border-color: hsl(var(--callout-success-fg)); }
+
   /* Sidebar item */
   .sidebar-item {
     @apply flex items-center gap-1.5 w-full text-left rounded-md px-2 py-1.5 text-[14px]

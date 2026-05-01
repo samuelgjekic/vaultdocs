@@ -6,8 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Tree-shaped page payload: omits the editor JSON (`content`) and includes
- * recursively nested `children`. Used for the sidebar / outline endpoint.
+ * Tree-shaped page payload with recursively nested `children`. Includes the
+ * editor `content` so the SPA can render and navigate without a second fetch
+ * per page. Pages are bounded per-space, so the payload stays reasonable.
  */
 class PageTreeResource extends JsonResource
 {
@@ -24,6 +25,7 @@ class PageTreeResource extends JsonResource
             'external_url' => $this->external_url,
             'position' => (int) $this->position,
             'updated_at' => $this->updated_at?->toIso8601String(),
+            'content' => $this->content,
             'children' => self::collection($this->whenLoaded('children')),
         ];
     }

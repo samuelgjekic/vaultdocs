@@ -10,6 +10,16 @@ export default defineConfig({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      "/api": {
+        target: "http://localhost:8000",
+        changeOrigin: false,
+      },
+      "/sanctum": {
+        target: "http://localhost:8000",
+        changeOrigin: false,
+      },
+    },
   },
   plugins: [react()],
   resolve: {

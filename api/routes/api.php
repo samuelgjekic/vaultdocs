@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ExportController;
 use App\Http\Controllers\Api\V1\PageController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\SettingsController;
@@ -31,4 +32,5 @@ Route::prefix('orgs/{organization}/spaces/{space}')->scopeBindings()->group(func
     Route::put('/tree', [PageController::class, 'reorder']);
 
     Route::get('/search', [SearchController::class, 'space']);
+    Route::get('/export', [ExportController::class, 'export']);
 });

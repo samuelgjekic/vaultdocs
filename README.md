@@ -2,19 +2,11 @@
 
 > **Self-hosted, open-source documentation platform.** Your docs. Your rules.
 
-VaultDocs is a beautifully designed documentation platform you can self-host. Tiptap editor, three-column layout, full-text search, drag-and-drop reordering, password-protected spaces, custom domains. MIT licensed.
+A clean, polished docs platform you can run on your own server. Tiptap editor, three-column layout, full-text search, drag-to-reorder, password-protected pages, custom domains. MIT licensed.
 
-## Repo layout
+---
 
-```
-vaultdocs/
-├── api/                 Laravel backend (Sanctum SPA auth, SQLite by default)
-├── web/                 React + Vite + Tiptap frontend
-├── docker-compose.yml   One-command self-host
-└── LICENSE              MIT
-```
-
-## Quickstart with Docker
+## Get started in 60 seconds
 
 ```sh
 git clone https://github.com/samuelgjekic/vaultdocs.git
@@ -22,80 +14,121 @@ cd vaultdocs
 docker-compose up
 ```
 
-Open <http://localhost:5173>, walk through `/setup` to create your admin user and first organization.
+Open <http://localhost:5173> and walk through `/setup` to create your admin user and first organization.
 
-The SQLite database persists in the `vaultdocs-data` named volume. To start fresh: `docker-compose down -v`.
+That's it. Sign in, start writing.
 
 ---
+
+## What's inside
+
+- **Rich editor** — Tiptap with formatting toolbar, slash menu (`/` for blocks), bubble menu on selection, drag-to-reorder pages, autosave
+- **Custom blocks** — callouts (info / warning / danger / success), code blocks with syntax highlighting, tables, task lists, images
+- **Search** — `⌘K` command palette, full-text within a space
+- **Export** — download a whole space as PDF (formatting preserved) or plain text from space settings
+- **Icons** — emoji, Lucide icon, image upload, or none — picker per space
+- **Themes** — light / dark / system, persisted per user
+- **Visibility** — public, private (org members only), or unlisted spaces
+- **Auth** — login, register (toggleable), first-run setup wizard
+
+---
+
+## Daily use
+
+### Sign in
+
+Visit your VaultDocs URL and log in with the admin account you created during setup. The seeded demo creds are `admin@dev.dev` / `password`.
+
+### Edit a page
+
+1. Click any page in the sidebar
+2. Click **Edit** (top right)
+3. Use the toolbar above the editor, type `/` for a block menu, or select text for the bubble toolbar
+4. Changes autosave
+
+### Reorder
+
+Drag any page in the sidebar — drop on another page to nest, drop between pages to reorder.
+
+### Export
+
+Open space settings → scroll to **Export** → click **PDF** or **TXT**. Downloads start immediately.
+
+### Search
+
+Press `⌘K` (or `Ctrl+K`). Searches titles and content in the current space.
+
+---
+
+## Self-hosting
+
+Docker Compose is the supported path:
+
+```sh
+docker-compose up -d
+```
+
+Data persists in the `vaultdocs-data` named volume. To start fresh: `docker-compose down -v`.
+
+To put VaultDocs behind your own domain, point a reverse proxy (Caddy / Traefik / nginx) at the `web` container on port 80 and the `api` container on port 8000.
+
+---
+
+<details>
+<summary><b>Advanced</b> — tech stack, architecture, configuration, contributing</summary>
 
 ## Tech stack
 
 ### Backend (`api/`)
 
-| Layer | Choice |
-|---|---|
-| Language | PHP 8.3 |
-| Framework | Laravel 11+ (`laravel/framework: ^13.0`) |
-| Auth | `laravel/sanctum` ^4.0 — SPA cookie-based, CSRF protected |
-| Authorization | First-party Laravel policies (`app/Policies/SpacePolicy.php`) |
-| Database (default) | SQLite (file at `database/database.sqlite`) |
-| Database (supported) | MySQL 8+, PostgreSQL 14+ — set `DB_CONNECTION` in `.env` |
-| Slug generation | `spatie/laravel-sluggable` ^4.0 |
-| Roles & permissions | `spatie/laravel-permission` ^7.4 (wired in, used in Phase 2) |
-| Routing | API-only, prefixed at `/api/v1`, scoped route bindings (`{organization}/{space}`) |
-| Resources | `JsonResource` with global `withoutWrapping()` so responses are flat |
-| Testing | PHPUnit 12 via `php artisan test` (20 feature tests at v1) |
+- **PHP 8.3** + **Laravel 11+**
+- **Sanctum** for SPA cookie auth (CSRF protected)
+- **First-party policies** for authorization (`app/Policies/SpacePolicy.php`)
+- **SQLite** by default; **MySQL 8+** / **PostgreSQL 14+** by changing `DB_CONNECTION`
+- **dompdf** for PDF export
+- **Spatie Sluggable** for slugs, **Spatie Permission** wired in for future role expansion
+- **PHPUnit 12** — `php artisan test` (25 feature tests at v1)
 
-The backend is intentionally thin: controllers delegate tree assembly and reorder transactions to `app/Services/PageService.php`, and authorization is centralized in `SpacePolicy`. Page content is stored as raw Tiptap JSON in `pages.content`; a denormalized plain-text mirror lives in `pages.content_markdown` for `LIKE`-based search. Switching to Laravel Scout (Meilisearch / Typesense / Algolia) is a one-driver-swap upgrade.
+The backend is intentionally thin: controllers delegate tree assembly, reorder transactions, and Tiptap JSON walking to services in `app/Services/`. Page content is stored as raw Tiptap JSON in `pages.content`; a denormalized plain-text mirror lives in `pages.content_markdown` for `LIKE`-based search. Switching to Laravel Scout (Meilisearch / Typesense / Algolia) is a one-driver-swap upgrade.
 
 ### Frontend (`web/`)
 
-| Layer | Choice |
-|---|---|
-| Language | TypeScript 5 |
-| Framework | React 18 |
-| Bundler | Vite 5 |
-| Routing | `react-router-dom` v6 |
-| Data fetching | `@tanstack/react-query` v5 (server state) |
-| Client state | `zustand` v5 with `persist` middleware (auth, theme, unlocked-space registry) |
-| HTTP client | `axios` with `withCredentials: true` for Sanctum cookies |
-| Editor | `@tiptap/react` v3 + StarterKit, plus extensions for tables, task lists, code blocks (lowlight), images, links, placeholder, text-align, underline |
-| UI primitives | Radix UI suite + shadcn/ui patterns |
-| Styling | Tailwind CSS 3 with CSS-variable theming (light/dark/system) |
-| Drag & drop | `@dnd-kit/core` + `@dnd-kit/sortable` |
-| Command palette | `cmdk` (`⌘K` search overlay) |
-| Forms | `react-hook-form` + `zod` resolvers |
-| Icons | `lucide-react` |
-| Toasts | `sonner` |
-| Progress bar | `nprogress` |
+- **TypeScript 5** + **React 18** + **Vite 5**
+- **React Router v6** for routing
+- **TanStack Query v5** for server state, **Zustand v5** for client state (auth, theme)
+- **axios** with `withCredentials: true` for Sanctum cookies
+- **Tiptap v3** + extensions for tables, task lists, code blocks (lowlight), images, links, placeholder, text-align, underline + a custom callout node
+- **Tailwind CSS 3** + **Radix UI** primitives + shadcn/ui patterns
+- **@dnd-kit** for sidebar drag-and-drop
+- **cmdk** for the search palette
+- **lucide-react** for icons, **sonner** for toasts, **nprogress** for the page loader
 
-### Self-hosting
+### Self-hosting containers
 
-| Layer | Choice |
-|---|---|
-| API container | `php:8.3-cli-alpine` running `php artisan serve` (suitable up to mid traffic; swap in `php-fpm` + nginx for production scale) |
-| Web container | Multi-stage `node:20-alpine` build → `nginx:1.27-alpine` serving the Vite static build |
-| Persistence | SQLite on a named Docker volume (`vaultdocs-data`) |
-| Reverse proxy | Bring your own — Caddy, Traefik, or nginx in front of `web` and `api` works fine |
+- **api** — `php:8.3-cli-alpine` running `php artisan serve` (suitable up to mid traffic; swap in `php-fpm` + nginx for production scale)
+- **web** — multi-stage `node:20-alpine` build → `nginx:1.27-alpine` serving the Vite static build
+- **storage** — SQLite on a named Docker volume
 
----
+## Architecture
 
-## Architecture overview
+### Auth
 
-### Auth flow
+Sanctum SPA cookie flow:
 
-1. Frontend hits `GET /sanctum/csrf-cookie` to seed the `XSRF-TOKEN` cookie.
-2. Frontend `POST /api/v1/auth/login` with credentials. Sanctum's stateful middleware writes a session cookie.
-3. Subsequent requests carry the session + CSRF cookies automatically (`axios.create({ withCredentials: true })`).
-4. `App.tsx`'s `<AuthBoot />` calls `GET /api/v1/auth/me` once on mount to rehydrate the user.
+1. Frontend calls `GET /sanctum/csrf-cookie` to seed the `XSRF-TOKEN` cookie
+2. Frontend `POST /api/v1/auth/login` — Sanctum's stateful middleware writes a session cookie
+3. Subsequent requests carry both cookies automatically
+4. `<AuthBoot />` calls `GET /api/v1/auth/me` once on mount to rehydrate the user
+
+In dev, the Vite proxy forwards `/api` and `/sanctum` to the API so SPA + API share an origin (no cross-origin cookie issues).
 
 ### Page tree
 
-Pages are stored flat in a single table with a self-referencing `parent_id`. The tree endpoint loads all rows for a space in one query and assembles the nested structure in O(n) via `PageService::tree()`. Reorders are bulk operations: the client sends a flat list of `{ id, parent_id, position }`, the server validates that every `id` and every non-null `parent_id` belongs to the space, then runs the writes inside a single DB transaction.
+Pages are stored flat with a self-referencing `parent_id`. The tree endpoint loads all rows for a space in one query and assembles the nested structure in O(n) via `PageService::tree()`. Reorders are bulk: client sends `{ id, parent_id, position }[]`, server validates every id and parent belongs to the space, then writes in one transaction.
 
 ### Content storage
 
-Pages persist Tiptap JSON verbatim (`{ type: "doc", content: [...] }`). The frontend calls `editor.getJSON()` and `PUT`s it; the backend stores it in a `JSON` column. Plain-text extraction for search runs through `PageService::contentToText()` — a recursive walker over the AST — and is denormalized into `pages.content_markdown` on every write.
+Pages persist Tiptap JSON verbatim. The frontend calls `editor.getJSON()` and `PUT`s it; the backend stores it in a `JSON` column. Plain-text extraction for search runs through `PageService::contentToText()`. PDF export goes through `app/Services/Export/TiptapHtml.php` which walks the same JSON tree and emits semantic HTML for dompdf.
 
 ### API surface
 
@@ -109,23 +142,20 @@ GET    /api/v1/auth/me                                               auth
 GET    /api/v1/spaces                                                returns spaces visible to caller
 GET    /api/v1/orgs/{org}/spaces/{space}                             scoped binding
 PUT    /api/v1/orgs/{org}/spaces/{space}                             policy: manage
-GET    /api/v1/orgs/{org}/spaces/{space}/pages                       returns nested tree
+GET    /api/v1/orgs/{org}/spaces/{space}/pages                       returns nested tree, includes content
 POST   /api/v1/orgs/{org}/spaces/{space}/pages                       policy: manage
 PUT    /api/v1/orgs/{org}/spaces/{space}/pages/{page}                policy: manage
 DELETE /api/v1/orgs/{org}/spaces/{space}/pages/{page}                policy: manage, soft-delete
 PUT    /api/v1/orgs/{org}/spaces/{space}/tree                        bulk reorder, transactional
 GET    /api/v1/orgs/{org}/spaces/{space}/search?q=                   LIKE on title + content_markdown
+GET    /api/v1/orgs/{org}/spaces/{space}/export?format=pdf|txt       policy: view
 ```
 
-All responses are flat JSON (no `data` wrapper). Field shapes are pinned to TypeScript types in `web/src/types/index.ts` — change them in lockstep.
-
----
+All responses are flat JSON (no `data` wrapper). Field shapes are pinned to TypeScript types in `web/src/types/index.ts` — change them in lockstep across api and web.
 
 ## Local development
 
-### Backend (`api/`)
-
-Requirements: PHP 8.3+, Composer 2, SQLite (or MySQL 8+ / PostgreSQL 14+).
+### Backend
 
 ```sh
 cd api
@@ -136,11 +166,9 @@ php artisan migrate --seed     # seeds demo data + prints admin creds
 php artisan serve              # http://localhost:8000
 ```
 
-To use MySQL/Postgres instead, edit `.env` (`DB_CONNECTION=mysql`, host, port, db, user, password) and re-run `php artisan migrate --seed`.
+For MySQL/Postgres, edit `.env` (`DB_CONNECTION=mysql` etc.) and re-run `php artisan migrate --seed`.
 
-### Frontend (`web/`)
-
-Requirements: Node 20+.
+### Frontend
 
 ```sh
 cd web
@@ -149,31 +177,21 @@ cp .env.example .env
 npm run dev                    # http://localhost:5173
 ```
 
-The `--legacy-peer-deps` flag is needed because some Radix and Tiptap peer ranges drift slightly. CI uses the same flag.
+The `--legacy-peer-deps` flag is needed because some Radix and Tiptap peer ranges drift slightly.
 
-### Useful artisan commands
+### Common commands
 
 ```sh
-php artisan migrate:fresh --seed   # nuke and reseed (prints admin creds)
+php artisan migrate:fresh --seed   # reset DB, prints admin creds
 php artisan route:list             # list all API routes
-php artisan test                   # run feature + unit tests
+php artisan test                   # run all tests
 php artisan tinker                 # REPL with full app context
+npm run build                      # production frontend bundle
 ```
-
-### Useful npm scripts
-
-```sh
-npm run dev                        # Vite dev server with HMR
-npm run build                      # production build to dist/
-npm run lint                       # ESLint
-npm run test                       # Vitest
-```
-
----
 
 ## Configuration
 
-### Backend env vars (`api/.env`)
+### Backend env (`api/.env`)
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -184,17 +202,18 @@ npm run test                       # Vitest
 | `DB_DATABASE` | `database/database.sqlite` | Path or DB name |
 | `SESSION_DRIVER` | `database` | `cookie` works for stateless deployments |
 | `SESSION_SAME_SITE` | `lax` | Set to `none` (with HTTPS) for cross-origin SPA hosts |
+| `DOMPDF_ENABLE_REMOTE` | `true` | Allow PDF export to fetch remote `<img src="https://...">`. Set to `false` to harden against SSRF. |
 | `MAIL_MAILER` | `log` | Switch to `smtp` for password resets |
 
-### Frontend env vars (`web/.env`)
+### Frontend env (`web/.env`)
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `VITE_API_URL` | `http://localhost:8000/api/v1` | Where the SPA hits the API |
+| `VITE_API_URL` | `/api/v1` (proxied in dev) | Where the SPA hits the API |
 
-### Runtime settings (DB-backed)
+### DB-backed runtime settings
 
-Settings stored in the `settings` table override env where overlap exists:
+Settings in the `settings` table take effect at runtime without restart:
 
 - `setup_complete` — `'1'` once first-run wizard succeeds; locks `/setup`
 - `app_name` — header / page title
@@ -206,41 +225,31 @@ Edit via `php artisan tinker`:
 \App\Models\Setting::put('registration_enabled', '0');
 ```
 
----
-
 ## Tests
-
-20 feature tests covering auth, setup, space visibility, page tree shape, reorder transactions, cross-space rejection, and search:
 
 ```sh
 cd api
 php artisan test
 ```
 
-Tests use an in-memory SQLite database and the `RefreshDatabase` trait. The shared `TestCase` sets `Origin` / `Referer` headers matching `SANCTUM_STATEFUL_DOMAINS` so Sanctum's stateful middleware activates the session — same code path as production, no test-only branches in the controllers.
+25 feature tests covering auth, setup, space visibility, page tree shape, reorder transactions, cross-space rejection, search, and PDF/TXT export. In-memory SQLite via `RefreshDatabase`. The shared `TestCase` sets `Origin` / `Referer` headers matching the test `SANCTUM_STATEFUL_DOMAINS` so Sanctum's stateful middleware activates and starts a session — same code path as production, no test-only branches in the controllers.
 
----
-
-## What's in v1
-
-- Auth: login, logout, register (toggleable), first-run setup wizard
-- Spaces: list / view / update with public / private / unlisted visibility
-- Pages: nested tree, Tiptap JSON content, drag-to-reorder, soft delete
-- Search: full-text within a space (title + content)
-- Themes, command palette, table of contents, keyboard shortcuts
-
-## Coming next
+## Roadmap
 
 - Page revisions and history
+- "Create new space" UI flow
 - Media uploads (Spatie Media Library)
 - Password gate enforcement for public spaces
 - Organizations CRUD UI + invitations
 - Custom domain routing
 - Scout / Meilisearch for search at scale
+- Markdown export
 
 ## Contributing
 
 PRs welcome. The API and frontend are tightly coupled through `web/src/types/index.ts` — changes to JSON shape need to be made on both sides in the same PR. Run `php artisan test` before pushing.
+
+</details>
 
 ## License
 

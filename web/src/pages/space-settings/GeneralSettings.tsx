@@ -1,10 +1,13 @@
 import { useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSpace, updateSpace } from "@/api/spaces";
+import { apiBaseURL } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { EmojiPicker } from "@/components/ui/emoji-picker";
+import { FileText, FileType } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -31,7 +34,15 @@ export default function GeneralSettings() {
       }}
     >
       <SectionTitle title="General" subtitle="Basic information about this space." />
-      <div><Label>Icon (emoji)</Label><Input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} className="mt-1.5 w-24" /></div>
+      <div>
+        <Label>Icon</Label>
+        <div className="mt-1.5">
+          <EmojiPicker
+            value={form.icon}
+            onChange={(emoji) => setForm({ ...form, icon: emoji ?? "" })}
+          />
+        </div>
+      </div>
       <div><Label>Space name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1.5" /></div>
       <div>
         <Label>Slug</Label>
@@ -40,7 +51,31 @@ export default function GeneralSettings() {
       </div>
       <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="mt-1.5" rows={3} /></div>
       <Button type="submit">Save changes</Button>
+
+      <ExportSection orgSlug={orgSlug} spaceSlug={space.slug} />
     </form>
+  );
+}
+
+function ExportSection({ orgSlug, spaceSlug }: { orgSlug: string; spaceSlug: string }) {
+  const download = (format: "pdf" | "txt") => {
+    window.location.href = `${apiBaseURL}/orgs/${orgSlug}/spaces/${spaceSlug}/export?format=${format}`;
+  };
+
+  return (
+    <div className="space-y-3 pt-4">
+      <SectionTitle title="Export" subtitle="Download this space as a single file." />
+      <div className="flex gap-2">
+        <Button type="button" onClick={() => download("pdf")}>
+          <FileType className="h-3.5 w-3.5 mr-2" />
+          Export as PDF
+        </Button>
+        <Button type="button" variant="outline" onClick={() => download("txt")}>
+          <FileText className="h-3.5 w-3.5 mr-2" />
+          Export as TXT
+        </Button>
+      </div>
+    </div>
   );
 }
 

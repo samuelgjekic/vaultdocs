@@ -9,18 +9,15 @@ use App\Models\Space;
 use App\Models\User;
 use App\Services\PageService;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $password = Str::random(16);
-
         $admin = User::create([
-            'name' => 'Ada Lovelace',
-            'email' => 'ada@vaultdocs.io',
-            'password' => $password,
+            'name' => 'Admin',
+            'email' => 'admin@dev.dev',
+            'password' => 'password',
             'role' => 'admin',
             'is_admin' => true,
         ]);
@@ -63,8 +60,8 @@ class DatabaseSeeder extends Seeder
         $this->seedApiReference($apiSpace);
 
         $this->command->info("\n  Default admin credentials:");
-        $this->command->info("    email:    ada@vaultdocs.io");
-        $this->command->info("    password: {$password}\n");
+        $this->command->info("    email:    admin@dev.dev");
+        $this->command->info("    password: password\n");
     }
 
     private function seedProductDocs(Space $space): void

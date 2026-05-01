@@ -26,7 +26,7 @@ class SpaceController extends Controller
             });
         }
 
-        return SpaceResource::collection($query->orderBy('name')->get());
+        return SpaceResource::collection($query->orderBy('id')->get());
     }
 
     public function show(Organization $organization, Space $space)

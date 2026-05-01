@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import NProgress from "nprogress";
 import { findPageByPath, flatPages, getSpace, getPageTree, updatePageContent } from "@/api/spaces";
+import type { PageNode } from "@/types";
 import { DocsLayout } from "@/components/docs/DocsLayout";
 import { PageContent } from "@/components/docs/PageContent";
 import { PageEditor } from "@/components/docs/PageEditor";
@@ -48,6 +49,21 @@ export default function SpacePage() {
   const [editing, setEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 
+  // Patch the cached tree synchronously so Preview reflects edits without
+  // waiting for a refetch round-trip.
+  const patchTreeCache = (pageId: string, patch: Partial<PageNode>) => {
+    qc.setQueryData<PageNode[]>(["tree", orgSlug, spaceSlug], (prev) => {
+      if (!prev) return prev;
+      const walk = (nodes: PageNode[]): PageNode[] =>
+        nodes.map((n) => {
+          if (n.id === pageId) return { ...n, ...patch };
+          if (n.children?.length) return { ...n, children: walk(n.children) };
+          return n;
+        });
+      return walk(prev);
+    });
+  };
+
   const flat = useMemo(() => (tree ? flatPages(tree) : []), [tree]);
   const idx = page ? flat.findIndex((f) => f.node.id === page.id) : -1;
   const prev = idx > 0 ? { title: flat[idx - 1].node.title, path: flat[idx - 1].path } : undefined;
@@ -85,7 +101,9 @@ export default function SpacePage() {
     ...(page ? [{ label: page.title }] : []),
   ];
 
-  const right = !editing ? <TableOfContents /> : null;
+  // key={page.id} forces a remount on navigation so the TOC re-queries headings
+  // for the new page; otherwise it holds stale state from the first-loaded page.
+  const right = !editing && page ? <TableOfContents key={page.id} /> : null;
 
   return (
     <DocsLayout orgSlug={orgSlug} spaceSlug={spaceSlug} activePath={segments} rightRail={right}>
@@ -124,8 +142,8 @@ export default function SpacePage() {
                 <Button
                   size="sm"
                   onClick={async () => {
+                    patchTreeCache(page.id, { is_draft: false });
                     await updatePageContent(orgSlug, spaceSlug, page.id, page.content, { is_draft: false });
-                    qc.invalidateQueries({ queryKey: ["tree", orgSlug, spaceSlug] });
                   }}
                 >
                   Publish
@@ -142,6 +160,8 @@ export default function SpacePage() {
               isDraft={page.is_draft}
               onSaveStatus={setSaveStatus}
               onChange={async (content, title) => {
+                // Optimistic cache patch — reflects in Preview immediately, no refetch race.
+                patchTreeCache(page.id, { content, title });
                 await updatePageContent(orgSlug, spaceSlug, page.id, content, { title });
               }}
             />
