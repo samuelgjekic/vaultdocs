@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
-import { FileText, FileType } from "lucide-react";
+import { FileText, FileType, FileCode } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -58,17 +58,21 @@ export default function GeneralSettings() {
 }
 
 function ExportSection({ orgSlug, spaceSlug }: { orgSlug: string; spaceSlug: string }) {
-  const download = (format: "pdf" | "txt") => {
+  const download = (format: "pdf" | "md" | "txt") => {
     window.location.href = `${apiBaseURL}/orgs/${orgSlug}/spaces/${spaceSlug}/export?format=${format}`;
   };
 
   return (
     <div className="space-y-3 pt-4">
       <SectionTitle title="Export" subtitle="Download this space as a single file." />
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button type="button" onClick={() => download("pdf")}>
           <FileType className="h-3.5 w-3.5 mr-2" />
           Export as PDF
+        </Button>
+        <Button type="button" variant="outline" onClick={() => download("md")}>
+          <FileCode className="h-3.5 w-3.5 mr-2" />
+          Export as Markdown
         </Button>
         <Button type="button" variant="outline" onClick={() => download("txt")}>
           <FileText className="h-3.5 w-3.5 mr-2" />

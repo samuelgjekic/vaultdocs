@@ -14,6 +14,7 @@ class SpaceExporter
     public function __construct(
         private readonly PageService $pages,
         private readonly TiptapHtml $tiptap,
+        private readonly TiptapMarkdown $markdown,
     ) {}
 
     /** Plain-text dump of every page in the space, in tree order. */
@@ -24,6 +25,20 @@ class SpaceExporter
             $out[] = $page->title;
             $out[] = str_repeat('-', max(3, strlen($page->title)));
             $out[] = $this->pages->contentToText($page->content);
+            $out[] = '';
+        }
+
+        return implode("\n", $out);
+    }
+
+    /** Markdown (GFM) export of every page in the space. */
+    public function toMarkdown(Space $space): string
+    {
+        $out = ["# {$space->name}", ''];
+        foreach ($this->iterExportable($space) as $page) {
+            $out[] = "## {$page->title}";
+            $out[] = '';
+            $out[] = trim($this->markdown->render($page->content));
             $out[] = '';
         }
 

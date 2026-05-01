@@ -89,6 +89,41 @@ class ExportTest extends TestCase
         $this->assertStringContainsString('/Subtype /Image', $response->getContent());
     }
 
+    public function test_md_export_emits_markdown(): void
+    {
+        [, , $space] = $this->setupSpace();
+        Page::create([
+            'space_id' => $space->id, 'title' => 'Formatting', 'slug' => 'fmt', 'position' => 1,
+            'content' => [
+                'type' => 'doc',
+                'content' => [
+                    ['type' => 'heading', 'attrs' => ['level' => 2], 'content' => [['type' => 'text', 'text' => 'Marks']]],
+                    ['type' => 'paragraph', 'content' => [
+                        ['type' => 'text', 'marks' => [['type' => 'bold']], 'text' => 'bold'],
+                        ['type' => 'text', 'text' => ' and '],
+                        ['type' => 'text', 'marks' => [['type' => 'code']], 'text' => 'code'],
+                    ]],
+                    ['type' => 'callout', 'attrs' => ['variant' => 'warning'], 'content' => [
+                        ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Heads up']]],
+                    ]],
+                ],
+            ],
+        ]);
+
+        $response = $this->get('/api/v1/orgs/acme/spaces/docs/export?format=md');
+
+        $response->assertOk()
+            ->assertHeader('Content-Type', 'text/markdown; charset=utf-8')
+            ->assertHeader('Content-Disposition', 'attachment; filename="docs.md"');
+
+        $body = $response->getContent();
+        $this->assertStringContainsString('# Docs', $body);
+        $this->assertStringContainsString('## Formatting', $body);
+        $this->assertStringContainsString('**bold**', $body);
+        $this->assertStringContainsString('`code`', $body);
+        $this->assertStringContainsString('> [!WARNING]', $body);
+    }
+
     public function test_invalid_format_returns_400(): void
     {
         $this->setupSpace();

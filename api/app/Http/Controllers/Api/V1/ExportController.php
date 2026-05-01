@@ -25,7 +25,11 @@ class ExportController extends Controller
                 'Content-Type' => 'text/plain; charset=utf-8',
                 'Content-Disposition' => 'attachment; filename="'.$space->slug.'.txt"',
             ]),
-            default => abort(Response::HTTP_BAD_REQUEST, 'format must be pdf or txt'),
+            'md', 'markdown' => response($this->exporter->toMarkdown($space), Response::HTTP_OK, [
+                'Content-Type' => 'text/markdown; charset=utf-8',
+                'Content-Disposition' => 'attachment; filename="'.$space->slug.'.md"',
+            ]),
+            default => abort(Response::HTTP_BAD_REQUEST, 'format must be pdf, txt, or md'),
         };
     }
 }

@@ -28,7 +28,7 @@ That's it. Sign in, start writing.
 - **Rich editor** — Tiptap with formatting toolbar, slash menu (`/` for blocks), bubble menu on selection, drag-to-reorder pages, autosave
 - **Custom blocks** — callouts (info / warning / danger / success), code blocks with syntax highlighting, tables, task lists, images
 - **Search** — `⌘K` command palette, full-text within a space
-- **Export** — download a whole space as PDF (formatting preserved) or plain text from space settings
+- **Export** — download a whole space as PDF (formatting preserved), Markdown (GFM, callouts as `> [!NOTE]` admonitions), or plain text from space settings
 - **Icons** — emoji, Lucide icon, image upload, or none — picker per space
 - **Themes** — light / dark / system, persisted per user
 - **Visibility** — public, private (org members only), or unlisted spaces
@@ -55,7 +55,7 @@ Drag any page in the sidebar — drop on another page to nest, drop between page
 
 ### Export
 
-Open space settings → scroll to **Export** → click **PDF** or **TXT**. Downloads start immediately.
+Open space settings → scroll to **Export** → click **PDF**, **Markdown**, or **TXT**. Downloads start immediately.
 
 ### Search
 
@@ -151,7 +151,7 @@ PUT    /api/v1/orgs/{org}/spaces/{space}/pages/{page}                policy: man
 DELETE /api/v1/orgs/{org}/spaces/{space}/pages/{page}                policy: manage, soft-delete
 PUT    /api/v1/orgs/{org}/spaces/{space}/tree                        bulk reorder, transactional
 GET    /api/v1/orgs/{org}/spaces/{space}/search?q=                   LIKE on title + content_markdown
-GET    /api/v1/orgs/{org}/spaces/{space}/export?format=pdf|txt       policy: view
+GET    /api/v1/orgs/{org}/spaces/{space}/export?format=pdf|md|txt    policy: view
 ```
 
 All responses are flat JSON (no `data` wrapper). Field shapes are pinned to TypeScript types in `web/src/types/index.ts` — change them in lockstep across api and web.
