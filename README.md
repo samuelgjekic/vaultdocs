@@ -4,7 +4,7 @@
 
 A clean, polished docs platform you can run on your own server. Tiptap editor, three-column layout, full-text search, drag-to-reorder, themeable per space. MIT licensed.
 
-<img width="1309" height="664" alt="image" src="https://github.com/user-attachments/assets/1f65a574-0fed-46df-a795-c843382993b4" />
+<img width="1312" height="666" alt="image" src="https://github.com/user-attachments/assets/b73d8528-0b86-47c8-a0ec-00cffd0bb69a" />
 
 
 ---
